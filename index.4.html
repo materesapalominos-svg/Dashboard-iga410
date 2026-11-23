@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resultados IGA-410 · I trimestre 2026</title>
+<style>
+  :root{
+    --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#6e6d69;
+    --grid:#e4e3df; --border:#d9d8d3; --bar:#2a78d6; --bar-soft:#cde2fb;
+    --good:#0ca30c; --warn:#fab219; --crit:#d03b3b; --ref:#52514e; --focus:#1c5cab;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --page:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#a3a29a;
+      --grid:#383835; --border:#44433f; --bar:#3987e5; --bar-soft:#184f95; --ref:#c3c2b7; --focus:#86b6ef; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--page);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  main{max-width:1080px;margin:0 auto;padding:20px 16px 48px}
+  header.top{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+  h1{font-size:1.45rem;margin:0 0 4px;line-height:1.25}
+  h2{font-size:1.15rem;margin:0 0 4px}
+  .sub{color:var(--ink2);margin:0}
+  dl.meta{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:14px 0 0;font-size:.95rem}
+  dl.meta dt{color:var(--ink2);font-weight:600}
+  dl.meta dd{margin:0}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .kpi .lab{color:var(--ink2);font-size:.9rem}
+  .kpi .val{font-size:2rem;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+  .kpi .note{color:var(--muted);font-size:.8rem}
+  section.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 18px 14px;margin:16px 0}
+  .desc{color:var(--ink2);font-size:.92rem;margin:0 0 14px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.9rem;color:var(--ink2);margin:0 0 10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:14px;height:14px;border-radius:3px;display:inline-block}
+  .sw.good{background:var(--good)} .sw.warn{background:var(--warn)} .sw.crit{background:var(--crit)}
+  .sw.bar{background:var(--bar)} .sw.out{background:repeating-linear-gradient(45deg,var(--bar) 0 3px,var(--bar-soft) 3px 6px)}
+  .refline-key{width:0;height:14px;border-left:2px dashed var(--ref);display:inline-block}
+  /* horizontal bar rows */
+  .rows{position:relative}
+  .row{display:grid;grid-template-columns:minmax(120px,210px) 1fr minmax(150px,190px);align-items:center;gap:10px;margin:8px 0}
+  .row .name{font-size:.92rem;line-height:1.25}
+  .row .name small{display:block;color:var(--muted);font-size:.78rem}
+  .track{position:relative;height:26px;background:transparent;border-left:1px solid var(--ink2)}
+  .fill{position:absolute;left:0;top:3px;bottom:3px;background:var(--bar);border-radius:0 4px 4px 0;cursor:default}
+  .fill:focus{outline:3px solid var(--focus);outline-offset:2px}
+  .fill.out{background:repeating-linear-gradient(45deg,var(--bar) 0 4px,var(--bar-soft) 4px 8px)}
+  .ref{position:absolute;top:-4px;bottom:-4px;border-left:2px dashed var(--ref);pointer-events:none}
+  .val-lab{font-size:.92rem;font-variant-numeric:tabular-nums}
+  .val-lab b{font-weight:700}
+  .axis{display:grid;grid-template-columns:minmax(120px,210px) 1fr minmax(150px,190px);gap:10px;font-size:.78rem;color:var(--muted)}
+  .axis .ticks{position:relative;height:18px}
+  .axis .ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+  .reflabels{position:relative;height:18px;font-size:.78rem;color:var(--ink2)}
+  .reflabels span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+  /* stacked */
+  .stack{position:relative;height:26px;display:flex;gap:2px}
+  .seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;min-width:0;overflow:hidden}
+  .seg:first-child{border-radius:4px 0 0 4px} .seg:last-child{border-radius:0 4px 4px 0}
+  .seg.good{background:var(--good);color:#fff} .seg.warn{background:var(--warn);color:#0b0b0b} .seg.crit{background:var(--crit);color:#fff}
+  .seg:focus{outline:3px solid var(--focus);outline-offset:2px}
+  /* difficulty groups */
+  .group{margin:14px 0 4px}
+  .group h3{font-size:.95rem;margin:0 0 2px;color:var(--ink)}
+  .flag{font-weight:700}
+  /* histogram */
+  .hist{position:relative;height:220px;margin-top:26px;display:flex;align-items:flex-end;gap:0;border-bottom:1px solid var(--ink2);margin:30px 0 0 28px}
+  .hbar{flex:1;position:relative;height:100%;display:flex;align-items:flex-end;padding:0 1px}
+  .hbar .b{width:100%;background:var(--bar);border-radius:4px 4px 0 0;position:relative}
+  .hbar .b:focus{outline:3px solid var(--focus);outline-offset:2px}
+  .hbar .n{position:absolute;left:0;right:0;text-align:center;font-size:.8rem;color:var(--ink2);font-variant-numeric:tabular-nums}
+  .hx{position:relative;height:18px;margin:4px 0 0 28px;font-size:.75rem;color:var(--muted)}
+  .hx span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+  .hy{position:absolute;left:-28px;font-size:.72rem;color:var(--muted)}
+  .h4line{position:absolute;top:-6px;bottom:0;border-left:2px dashed var(--ref);pointer-events:none}
+  .h4line span{position:absolute;top:-18px;left:4px;font-size:.78rem;color:var(--ink2);white-space:nowrap}
+  /* tables */
+  details{margin-top:12px}
+  summary{cursor:pointer;display:inline-block;padding:6px 12px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;color:var(--ink);background:var(--page)}
+  summary:focus{outline:3px solid var(--focus);outline-offset:2px}
+  .tw{overflow-x:auto;margin-top:10px}
+  table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums}
+  th,td{border-bottom:1px solid var(--grid);padding:6px 8px;text-align:left;vertical-align:top}
+  th{color:var(--ink2);font-weight:600;background:var(--page)}
+  td.num,th.num{text-align:right}
+  .empty{padding:12px;border:1px dashed var(--border);border-radius:8px;color:var(--ink2)}
+  ol.obs{padding-left:1.3em;margin:0}
+  ol.obs li{margin:0 0 12px}
+  .tag{display:inline-block;font-size:.75rem;font-weight:700;padding:1px 8px;border-radius:10px;border:1px solid var(--border);color:var(--ink2);margin-right:6px}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 0}
+  .filters .lab{color:var(--ink2);font-size:.9rem;margin-right:4px}
+  .filters button{font:inherit;font-size:.9rem;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--ink);cursor:pointer;min-height:36px}
+  .filters button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink);font-weight:700}
+  .filters button:focus{outline:3px solid var(--focus);outline-offset:2px}
+  .filters .hint{color:var(--muted);font-size:.8rem;flex-basis:100%}
+  [hidden]{display:none!important}
+  footer{color:var(--muted);font-size:.82rem;margin-top:20px}
+  #tip{position:fixed;z-index:10;pointer-events:none;background:var(--ink);color:var(--surface);padding:8px 10px;border-radius:8px;font-size:.85rem;line-height:1.35;max-width:260px;opacity:0;transition:opacity .08s}
+  #tip b{display:block}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  @media (max-width:720px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .row,.axis{grid-template-columns:1fr}
+    .axis .ticks{margin:0} .axis>div:first-child,.axis>div:last-child{display:none}
+    .row .name{font-weight:600}
+    .kpi .val{font-size:1.6rem}
+  }
+  @media (forced-colors: active){ .fill,.seg,.hbar .b{forced-color-adjust:none;border:1px solid CanvasText} }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <h1>Resultados de la evaluación · Gestión de Residuos Agroindustriales (IGA-410)</h1>
+    <p class="sub">Panel generado con los datos de la planilla de datos ajustada v7. Solo códigos de estudiantes.</p>
+    <dl class="meta">
+      <dt>Asignatura</dt><dd>Gestión de Residuos Agroindustriales (IGA-410)</dd>
+      <dt>Nivel</dt><dd>4.° año de Ingeniería Agronómica · Universidad EARTH · I trimestre 2026</dd>
+      <dt>Instrumento</dt><dd>Evaluación sumativa del trimestre: bitácoras, tareas, exámenes parciales, informe de gira, proyecto de clase y participación</dd>
+      <dt>Objetivos</dt><dd>Los 10 objetivos del programa, agrupados en 5 indicadores (I1: obj. 1 y 10 · I2: obj. 2 y 4 · I3: obj. 3 y 5 · I4: obj. 7 y 8 · I5: obj. 6 y 9)</dd>
+      <dt>Estudiantes</dt><dd id="m-n"></dd>
+      <dt>Ítems</dt><dd id="m-items"></dd>
+    </dl>
+  </header>
+
+  <div class="kpis" role="list">
+    <div class="kpi" role="listitem"><div class="lab">Estudiantes evaluados</div><div class="val" id="k-n"></div></div>
+    <div class="kpi" role="listitem"><div class="lab">Promedio de nota</div><div class="val" id="k-nota"></div><div class="note">Escala 1,0 a 7,0</div></div>
+    <div class="kpi" role="listitem"><div class="lab">Con nota 4,0 o más</div><div class="val" id="k-4"></div><div class="note" id="k-4n"></div></div>
+    <div class="kpi" role="listitem"><div class="lab">Logro promedio</div><div class="val" id="k-logro"></div><div class="note" id="k-ex"></div></div>
+  </div>
+
+  <section class="card" aria-label="Filtro por indicador">
+    <div class="filters" id="filters"><span class="lab">Ver indicador:</span></div>
+  </section>
+
+  <section class="card" id="s-logro">
+    <h2>Logro promedio por indicador</h2>
+    <p class="desc">Promedio del % de logro de cada estudiante en los ítems del indicador. Las líneas punteadas marcan los umbrales de Parcialmente logrado y Logrado.</p>
+    <div class="legend"><span><i class="sw bar"></i>% de logro promedio</span><span><i class="refline-key"></i>Umbrales</span><span>✓ Logrado · ≈ Parcialmente logrado · ✗ No logrado</span></div>
+    <div id="c-logro"></div>
+    <details><summary>Ver datos</summary><div class="tw" id="t-logro"></div></details>
+  </section>
+
+  <section class="card" id="s-niveles">
+    <h2>Estudiantes por nivel en cada indicador</h2>
+    <p class="desc">Cantidad de estudiantes en cada nivel según su % de logro en el indicador.</p>
+    <div class="legend"><span><i class="sw good"></i>✓ Logrado</span><span><i class="sw warn"></i>≈ Parcialmente logrado</span><span><i class="sw crit"></i>✗ No logrado</span></div>
+    <div id="c-niveles"></div>
+    <details><summary>Ver datos</summary><div class="tw" id="t-niveles"></div></details>
+  </section>
+
+  <section class="card" id="s-dif">
+    <h2>Dificultad por ítem, agrupada por indicador</h2>
+    <p class="desc">Dificultad = promedio obtenido ÷ puntaje máximo. Cerca de 1: casi todos obtienen el puntaje completo. Los ítems fuera del rango 0,30 a 0,85 llevan rayas y el signo ⚠.</p>
+    <div class="legend"><span><i class="sw bar"></i>Dentro del rango</span><span><i class="sw out"></i>⚠ Fuera del rango</span><span><i class="refline-key"></i>0,30 y 0,85</span></div>
+    <div id="c-dif"></div>
+    <details><summary>Ver datos</summary><div class="tw" id="t-dif"></div></details>
+  </section>
+
+  <section class="card" id="s-hist">
+    <h2>Distribución de notas</h2>
+    <p class="desc">Cantidad de estudiantes por tramo de nota (tramos de 0,5: cada barra va desde su marca izquierda hasta la siguiente, sin incluirla). La línea punteada marca la nota 4,0.</p>
+    <div id="c-hist"></div>
+    <details><summary>Ver datos</summary><div class="tw" id="t-hist"></div></details>
+  </section>
+
+  <section class="card" id="s-apoyo">
+    <h2>Estudiantes que requieren apoyo</h2>
+    <p class="desc">Criterio: nota bajo 4,0 o dos o más indicadores no logrados.</p>
+    <div id="c-apoyo"></div>
+  </section>
+
+  <section class="card" id="s-mejora">
+    <h2>Para la decisión de mejora</h2>
+    <p class="desc">Preguntas para el docente a partir de los datos. <b>Aprendizaje</b>: todos los ítems del indicador están bajos. <b>Ítem</b>: un ítem está bajo mientras los otros de su indicador están altos.</p>
+    <ol class="obs" id="c-obs"></ol>
+  </section>
+
+  <footer><p><b>Datos anonimizados; dashboard elaborado con apoyo de IA y revisado por el docente.</b></p>Reglas de cálculo (iguales a la planilla): nota = 1 + 3·P/(e·Pmáx) si P &lt; e·Pmáx; si no, 4 + 3·(P − e·Pmáx)/(Pmáx·(1 − e)), redondeada a un decimal, con exigencia e. % de logro por indicador = puntaje del estudiante en los ítems del indicador ÷ puntaje máximo de esos ítems.</footer>
+</main>
+<div id="tip" role="tooltip"></div>
+
+<script>
+const DATA = {"exigencia": 0.6, "ul": 0.75, "up": 0.5, "indicadores": [{"n": 1, "text": "Evalúa el impacto ambiental de la gestión de residuos de un sistema agroindustrial a partir de su clasificación (origen, composición e impacto ambiental) y de un análisis de ciclo de vida. [Obj. 1 y 10]", "level": "Evaluar"}, {"n": 2, "text": "Analiza las características fisicoquímicas y microbiológicas de las aguas residuales y su tratamiento en tanques, biodigestores y lagunas de estabilización. ", "level": "Analizar"}, {"n": 3, "text": "Aplica técnicas de compostaje, vermicompostaje y planes de aplicación de purines como fertilizante para tratar residuos orgánicos. ", "level": "Aplicar"}, {"n": 4, "text": "Aplica métodos de extracción de celulosa y de aceites esenciales a residuos agroindustriales. [Obj. 7 y 8]", "level": "Aplicar"}, {"n": 5, "text": "Diferencia las rutas de valorización energética de residuos: combustión, gasificación, pirólisis y producción de biodiésel. [Obj. 6 y 9]", "level": "Analizar"}], "items": [{"n": 1, "label": "Avance 1", "ind": 1, "max": 5}, {"n": 2, "label": "Bitácora 1", "ind": 2, "max": 5}, {"n": 3, "label": "Tarea 1", "ind": 2, "max": 5}, {"n": 4, "label": "Examen 1", "ind": 2, "max": 10}, {"n": 5, "label": "Avance 2", "ind": 1, "max": 5}, {"n": 6, "label": "Tarea 2", "ind": 3, "max": 5}, {"n": 7, "label": "Inf. Gira", "ind": 1, "max": 10}, {"n": 8, "label": "Bitácora 2", "ind": 3, "max": 5}, {"n": 9, "label": "Examen 2", "ind": 3, "max": 10}, {"n": 10, "label": "Avance 3", "ind": 1, "max": 5}, {"n": 11, "label": "Examen 3", "ind": 1, "max": 10}, {"n": 12, "label": "Bitácora 3", "ind": 4, "max": 5}, {"n": 13, "label": "Participación", "ind": null, "max": 5}, {"n": 14, "label": "Presentación", "ind": 1, "max": 5}, {"n": 15, "label": "Informe", "ind": 1, "max": 10}], "estudiantes": [{"c": "E01", "p": [5, 4, 3, 8.7, 4, 5, 10, 5, 8.65, 4.8, 9.5, 5, 2.5, 3.5, 7.5]}, {"c": "E02", "p": [4.8, 5, 5, 9.8, 5, 4.5, 10, 5, 8.3, 4.5, 9.5, 5, 4, 4, 7.7]}, {"c": "E03", "p": [4.6, 5, 5, 8.7, 4, 4.6, 8.7, 5, 6, 5, 9, 5, 3, 4.5, 7.8]}, {"c": "E04", "p": [4.6, 3.5, 4.5, 9, 4.5, 4.6, 10, 3.5, 6, 5, 10, 4.5, 4, 5, 8.4]}, {"c": "E05", "p": [5, 3.5, 3, 8.7, 4, 5, 9, 3.5, 9, 4.8, 10, 0, 4, 4, 7.5]}, {"c": "E06", "p": [4.8, 4.5, 5, 9.8, 5, 4.5, 10, 5, 7.5, 4.5, 6, 2, 2, 3, 7.7]}, {"c": "E07", "p": [4.6, 4, 5, 8.7, 4, 4.6, 10, 5, 9.7, 5, 9.5, 5, 5, 4, 7.8]}, {"c": "E08", "p": [4.6, 4, 4.5, 9, 4.5, 4.6, 10, 5, 9, 5, 9, 4.5, 2, 4, 8.4]}, {"c": "E09", "p": [5, 4.5, 3, 8.7, 4, 5, 10, 5, 9.3, 4.8, 8.5, 4.5, 3, 4, 7.5]}, {"c": "E10", "p": [4.8, 3.5, 5, 9.8, 5, 4.5, 10, 5, 9.5, 4.5, 10, 2, 3, 3, 7.7]}, {"c": "E11", "p": [4.6, 4, 5, 8.7, 4, 4.6, 10, 5, 9.2, 5, 10, 3.5, 3, 4, 7.8]}, {"c": "E12", "p": [4.6, 4, 4.5, 9.5, 2.5, 4.8, 10, 3.5, 9.25, 0, 8.5, 3, 4, 5, 7.2]}, {"c": "E13", "p": [5, 3.5, 3, 8.7, 4, 0, 10, 4, 7.45, 4.8, 9.5, 5, 4, 3.5, 7.5]}, {"c": "E14", "p": [4.8, 5, 5, 9.8, 5, 4.5, 9.6, 5, 9.5, 4.5, 10, 5, 4, 4, 7.7]}, {"c": "E15", "p": [4.6, 4, 4.5, 9, 4.5, 4.6, 9.1, 5, 7.3, 5, 10, 4, 4, 5, 8.4]}, {"c": "E16", "p": [4.6, 4, 4.5, 9.5, 2.5, 4.8, 9, 4, 9.3, 0, 7, 0, 3, 5, 7.2]}, {"c": "E17", "p": [4.6, 4, 5, 8.7, 4, 4.6, 8, 5, 9.7, 5, 9, 4, 3.5, 4, 7.8]}, {"c": "E18", "p": [4.6, 3.5, 4.5, 9.5, 2.5, 4.8, 8, 5, 9, 0, 8, 3, 4, 5, 7.2]}, {"c": "E19", "p": [4.8, 3.5, 5, 9.8, 5, 4.5, 10, 5, 7.5, 4.5, 10, 4, 4, 3.5, 7.7]}, {"c": "E20", "p": [4.6, 3.5, 4.5, 9.5, 2.5, 4.8, 9, 5, 6.25, 0, 10, 4.5, 5, 5, 7.2]}, {"c": "E21", "p": [5, 4, 3, 8.7, 4, 5, 10, 5, 7.5, 4.8, 9, 5, 4, 4.5, 7.5]}, {"c": "E22", "p": [4.6, 3.5, 4.5, 9, 4.5, 4.6, 10, 5, 9.2, 5, 8, 3, 4, 4, 8.4]}, {"c": "E23", "p": [4.6, 3.5, 5, 8.7, 4, 4.6, 10, 3.5, 6.5, 5, 9, 5, 4, 5, 7.8]}]};
+
+// ---------- cálculos (mismas reglas que la planilla)
+const fmt = (x, d=1) => x.toLocaleString('es-CL', {minimumFractionDigits:d, maximumFractionDigits:d});
+const pct = (x, d=1) => fmt(x*100, d) + ' %';
+const round1 = x => Math.sign(x) * Math.round(Math.abs(x)*10 + 1e-9) / 10;
+const items = DATA.items, E = DATA.exigencia, UL = DATA.ul, UP = DATA.up;
+const PMAX = items.reduce((a,i)=>a+i.max,0);
+const studs = DATA.estudiantes.map(s => {
+  const total = s.p.reduce((a,b)=>a+b,0);
+  const c = E*PMAX;
+  const nota = round1(total < c ? 1 + 3*total/c : 4 + 3*(total-c)/(PMAX*(1-E)));
+  const ind = {};
+  DATA.indicadores.forEach(d => {
+    const idx = items.map((it,k)=>it.ind===d.n?k:-1).filter(k=>k>=0);
+    const mx = idx.reduce((a,k)=>a+items[k].max,0);
+    if (mx>0) ind[d.n] = idx.reduce((a,k)=>a+s.p[k],0)/mx;
+  });
+  return {code:s.c, total, pct: total/PMAX, nota, ind};
+});
+const level = p => p>=UL ? 'L' : (p>=UP ? 'P' : 'N');
+const LV = {L:{t:'Logrado',i:'✓',c:'good'}, P:{t:'Parcialmente logrado',i:'≈',c:'warn'}, N:{t:'No logrado',i:'✗',c:'crit'}};
+const N = studs.length;
+const notaAvg = studs.reduce((a,s)=>a+s.nota,0)/N;
+const n4 = studs.filter(s=>s.nota>=4).length;
+const logroAvg = studs.reduce((a,s)=>a+s.pct,0)/N;
+const indStats = DATA.indicadores.map(d => {
+  const its = items.filter(i=>i.ind===d.n);
+  const vals = studs.filter(s=>d.n in s.ind).map(s=>s.ind[d.n]);
+  const st = {n:d.n, text:d.text, nivel:d.level, items:its.map(i=>i.label), max:its.reduce((a,i)=>a+i.max,0)};
+  if (vals.length){ st.avg = vals.reduce((a,b)=>a+b,0)/vals.length; st.L=vals.filter(v=>level(v)==='L').length; st.P=vals.filter(v=>level(v)==='P').length; st.N=vals.filter(v=>level(v)==='N').length; }
+  return st;
+});
+const itemStats = items.map((it,k) => {
+  const vals = DATA.estudiantes.map(s=>s.p[k]);
+  const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+  return {...it, avg, dif: avg/it.max, full: vals.filter(v=>v===it.max).length/vals.length, zeros: DATA.estudiantes.filter(s=>s.p[k]===0).map(s=>s.c)};
+});
+const outOfRange = d => d < 0.30 || d > 0.85;
+
+// ---------- tooltip
+const tip = document.getElementById('tip');
+function bindTip(el, html){
+  el.setAttribute('tabindex','0');
+  const show = e => { tip.innerHTML = html; tip.style.opacity = 1; place(e); };
+  const place = e => {
+    const r = el.getBoundingClientRect();
+    let x = (e && e.clientX!==undefined && e.type.startsWith('mouse')) ? e.clientX : r.left + r.width/2;
+    let y = (e && e.clientY!==undefined && e.type.startsWith('mouse')) ? e.clientY : r.top;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    x = Math.min(Math.max(8, x + 12), window.innerWidth - tw - 8);
+    y = y - th - 12; if (y < 8) y = (r.bottom + 12);
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  };
+  el.addEventListener('mouseenter', show); el.addEventListener('mousemove', place);
+  el.addEventListener('mouseleave', ()=>tip.style.opacity=0);
+  el.addEventListener('focus', show); el.addEventListener('blur', ()=>tip.style.opacity=0);
+  el.addEventListener('touchstart', e=>{ show(e); setTimeout(()=>tip.style.opacity=0, 2500); }, {passive:true});
+}
+const h = (tag, attrs={}, html='') => { const e=document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v)); e.innerHTML=html; return e; };
+function table(el, head, rows, numCols=[]){
+  const t = h('table');
+  t.appendChild(h('thead',{},'<tr>'+head.map((c,i)=>`<th${numCols.includes(i)?' class="num"':''}>${c}</th>`).join('')+'</tr>'));
+  const tb = h('tbody'); rows.forEach(r=>tb.appendChild(h('tr',{},r.map((c,i)=>`<td${numCols.includes(i)?' class="num"':''}>${c}</td>`).join('')))); t.appendChild(tb);
+  document.getElementById(el).appendChild(t);
+}
+const short = t => { const s = t.replace(/\s*\[Obj.*$/,''); return s.length>70 ? s.slice(0,68)+'…' : s; };
+
+// ---------- encabezado y cifras
+document.getElementById('m-n').textContent = N;
+document.getElementById('m-items').textContent = items.length + ' ítems con puntaje (' + fmt(PMAX,0) + ' puntos en total)';
+document.getElementById('k-n').textContent = N;
+document.getElementById('k-nota').textContent = fmt(notaAvg, 1);
+document.getElementById('k-4').textContent = pct(n4/N, 0);
+document.getElementById('k-4n').textContent = n4 + ' de ' + N + ' estudiantes';
+document.getElementById('k-logro').textContent = pct(logroAvg, 1);
+document.getElementById('k-ex').textContent = 'Exigencia para la nota 4,0: ' + pct(E,0);
+
+// ---------- 3. logro por indicador
+(function(){
+  const box = document.getElementById('c-logro');
+  const ax = h('div',{class:'axis','aria-hidden':'true'}); ax.appendChild(h('div'));
+  const rl = h('div',{class:'reflabels'}); rl.innerHTML = `<span style="left:${UP*100}%">${pct(UP,0)}</span><span style="left:${UL*100}%">${pct(UL,0)}</span>`;
+  ax.appendChild(rl); ax.appendChild(h('div')); box.appendChild(ax);
+  indStats.forEach(s => {
+    const row = h('div',{class:'row'});
+    row.appendChild(h('div',{class:'name'}, `<b>I${s.n}</b> · ${s.nivel}<small>${short(s.text)}</small>`));
+    const tr = h('div',{class:'track'});
+    tr.innerHTML = `<i class="ref" style="left:${UP*100}%"></i><i class="ref" style="left:${UL*100}%"></i>`;
+    let lab;
+    if (s.avg===undefined){
+      lab = '<span class="val-lab">Sin datos: no tiene ítems</span>';
+    } else {
+      const f = h('div',{class:'fill', style:`width:${s.avg*100}%`, 'aria-label':`I${s.n}: ${pct(s.avg)} ${LV[level(s.avg)].t}`});
+      bindTip(f, `<b>I${s.n} · ${s.nivel}</b>Logro promedio: ${pct(s.avg)}<br>Nivel: ${LV[level(s.avg)].i} ${LV[level(s.avg)].t}<br>Ítems: ${s.items.join(', ')}<br>Puntaje máximo: ${fmt(s.max,0)}`);
+      tr.appendChild(f);
+      lab = `<span class="val-lab"><b>${pct(s.avg)}</b> · ${LV[level(s.avg)].i} ${LV[level(s.avg)].t}</span>`;
+    }
+    row.dataset.ind = s.n; row.appendChild(tr); row.appendChild(h('div',{},lab)); box.appendChild(row);
+  });
+  const ax2 = h('div',{class:'axis','aria-hidden':'true'}); ax2.appendChild(h('div'));
+  const tk = h('div',{class:'ticks'}); [0,25,50,75,100].forEach(v=>tk.appendChild(h('span',{style:`left:${v}%`},v+' %'))); ax2.appendChild(tk); ax2.appendChild(h('div')); box.appendChild(ax2);
+  table('t-logro',['Indicador','Nivel cognitivo','Ítems','Puntaje máx.','Logro promedio','Nivel'],
+    indStats.map(s=>[`I${s.n}`, s.nivel, s.items.length? s.items.join(', ') : '—', fmt(s.max,0), s.avg===undefined?'Sin datos':pct(s.avg), s.avg===undefined?'—':LV[level(s.avg)].i+' '+LV[level(s.avg)].t]),[3,4]);
+})();
+
+// ---------- 4. estudiantes por nivel
+(function(){
+  const box = document.getElementById('c-niveles');
+  indStats.forEach(s => {
+    const row = h('div',{class:'row'});
+    row.appendChild(h('div',{class:'name'}, `<b>I${s.n}</b> · ${s.nivel}<small>${short(s.text)}</small>`));
+    const st = h('div',{class:'stack'});
+    let lab;
+    if (s.avg===undefined){ lab='Sin datos: no tiene ítems'; st.style.borderLeft='1px solid var(--ink2)'; }
+    else {
+      const tot = s.L+s.P+s.N;
+      ['L','P','N'].forEach(k => { if (!s[k]) return;
+        const seg = h('div',{class:'seg '+LV[k].c, style:`width:${s[k]/tot*100}%`, 'aria-label':`I${s.n}, ${LV[k].t}: ${s[k]} estudiantes`}, s[k]/tot>0.08 ? `${LV[k].i} ${s[k]}` : '');
+        bindTip(seg, `<b>I${s.n} · ${LV[k].i} ${LV[k].t}</b>${s[k]} de ${tot} estudiantes (${pct(s[k]/tot,0)})`);
+        st.appendChild(seg); });
+      lab = `✓ ${s.L} · ≈ ${s.P} · ✗ ${s.N}`;
+    }
+    row.dataset.ind = s.n; row.appendChild(st); row.appendChild(h('div',{class:'val-lab'},lab)); box.appendChild(row);
+  });
+  table('t-niveles',['Indicador','✓ Logrado','≈ Parcialmente logrado','✗ No logrado','% Logrado'],
+    indStats.map(s=>s.avg===undefined?[`I${s.n}`,'—','—','—','Sin datos']:[`I${s.n}`, s.L, s.P, s.N, pct(s.L/(s.L+s.P+s.N),0)]),[1,2,3,4]);
+})();
+
+// ---------- 5. dificultad por ítem
+(function(){
+  const box = document.getElementById('c-dif');
+  const groups = [...indStats.map(s=>({key:s.n, title:`I${s.n} · ${short(s.text)}`})), {key:null, title:'Sin indicador'}];
+  const ax = h('div',{class:'axis','aria-hidden':'true'}); ax.appendChild(h('div'));
+  const rl = h('div',{class:'reflabels'}); rl.innerHTML = `<span style="left:30%">0,30</span><span style="left:85%">0,85</span>`;
+  ax.appendChild(rl); ax.appendChild(h('div')); box.appendChild(ax);
+  groups.forEach(g => {
+    const its = itemStats.filter(i => (i.ind ?? null) === g.key);
+    const gr = h('div',{class:'group'}); gr.dataset.ind = g.key ?? 'none'; gr.appendChild(h('h3',{}, g.title));
+    if (!its.length){ gr.appendChild(h('p',{class:'desc'},'No tiene ítems en la hoja Especificaciones.')); box.appendChild(gr); return; }
+    its.forEach(i => {
+      const out = outOfRange(i.dif);
+      const row = h('div',{class:'row'});
+      row.appendChild(h('div',{class:'name'}, `${i.label}<small>Ítem ${i.n} · máx. ${fmt(i.max,0)} pts</small>`));
+      const tr = h('div',{class:'track'});
+      tr.innerHTML = `<i class="ref" style="left:30%"></i><i class="ref" style="left:85%"></i>`;
+      const f = h('div',{class:'fill'+(out?' out':''), style:`width:${i.dif*100}%`, 'aria-label':`${i.label}: dificultad ${fmt(i.dif,2)}${out?', fuera de rango':''}`});
+      bindTip(f, `<b>${i.label}</b>Dificultad: ${fmt(i.dif,2)}<br>Promedio: ${fmt(i.avg,2)} de ${fmt(i.max,0)}<br>Con puntaje completo: ${pct(i.full,0)}${i.zeros.length?`<br>Con 0 puntos: ${i.zeros.join(', ')}`:''}${out?'<br>⚠ Fuera del rango 0,30–0,85':''}`);
+      tr.appendChild(f); row.appendChild(tr);
+      row.appendChild(h('div',{class:'val-lab'}, `<b>${fmt(i.dif,2)}</b>${out?' <span class="flag">⚠ '+(i.dif>0.85?'sobre 0,85':'bajo 0,30')+'</span>':''}`));
+      gr.appendChild(row);
+    });
+    box.appendChild(gr);
+  });
+  const ax2 = h('div',{class:'axis','aria-hidden':'true'}); ax2.appendChild(h('div'));
+  const tk = h('div',{class:'ticks'}); [0,0.25,0.5,0.75,1].forEach(v=>tk.appendChild(h('span',{style:`left:${v*100}%`},fmt(v,2)))); ax2.appendChild(tk); ax2.appendChild(h('div')); box.appendChild(ax2);
+  table('t-dif',['Ítem','Etiqueta','Indicador','Puntaje máx.','Promedio','Dificultad','% con puntaje completo','Alerta'],
+    itemStats.map(i=>[i.n, i.label, i.ind?'I'+i.ind:'Sin indicador', fmt(i.max,0), fmt(i.avg,2), fmt(i.dif,2), pct(i.full,0), outOfRange(i.dif)?(i.dif>0.85?'⚠ Sobre 0,85':'⚠ Bajo 0,30'):'—']),[0,3,4,5,6]);
+})();
+
+// ---------- 6. histograma de notas
+(function(){
+  const box = document.getElementById('c-hist');
+  const bins = []; for (let a=1.0; a<7.0-1e-9; a+=0.5) bins.push([round1(a), round1(a+0.5)]);
+  const counts = bins.map(([a,b],k)=>studs.filter(s=> s.nota>=a && (k===bins.length-1 ? s.nota<=b : s.nota<b)).length);
+  const mx = Math.max(...counts, 1);
+  const hist = h('div',{class:'hist', role:'img', 'aria-label':'Histograma de notas'});
+  [0, Math.ceil(mx/2), mx].forEach(v=>hist.appendChild(h('span',{class:'hy', style:`bottom:${v/mx*100}%;transform:translateY(50%)`}, v)));
+  counts.forEach((c,k) => {
+    const [a,b] = bins[k];
+    const hb = h('div',{class:'hbar'});
+    if (c>0){
+      const bar = h('div',{class:'b', style:`height:${c/mx*100}%`, 'aria-label':`Notas ${fmt(a)} a ${fmt(b)}: ${c} estudiantes`});
+      bindTip(bar, `<b>Notas de ${fmt(a)} a ${k===bins.length-1?'':'menos de '}${fmt(b)}</b>${c} estudiante${c>1?'s':''}<br>${studs.filter(s=>s.nota>=a && (k===bins.length-1?s.nota<=b:s.nota<b)).map(s=>s.code).join(', ')}`);
+      bar.appendChild(h('span',{class:'n', style:'top:-20px'}, c));
+      hb.appendChild(bar);
+    }
+    hist.appendChild(hb);
+  });
+  const line = h('div',{class:'h4line', style:`left:${(4-1)/6*100}%`}); line.appendChild(h('span',{},'Nota 4,0')); hist.appendChild(line);
+  box.appendChild(hist);
+  const hx = h('div',{class:'hx','aria-hidden':'true'}); for (let v=1; v<=7; v++) hx.appendChild(h('span',{style:`left:${(v-1)/6*100}%`},fmt(v))); box.appendChild(hx);
+  box.appendChild(h('p',{class:'desc', style:'margin-top:6px'}, `Nota mínima: ${fmt(Math.min(...studs.map(s=>s.nota)))} · nota máxima: ${fmt(Math.max(...studs.map(s=>s.nota)))}`));
+  table('t-hist',['Tramo de nota','Estudiantes','Códigos'], bins.map(([a,b],k)=>[`${fmt(a)} a ${k===bins.length-1?'':'< '}${fmt(b)}`, counts[k], studs.filter(s=>s.nota>=a && (k===bins.length-1?s.nota<=b:s.nota<b)).map(s=>s.code).join(', ')||'—']),[1]);
+  const det = h('details'); det.appendChild(h('summary',{},'Ver notas por estudiante'));
+  const tw = h('div',{class:'tw', id:'t-notas'}); det.appendChild(tw); document.getElementById('s-hist').appendChild(det);
+  table('t-notas',['Código','Puntaje total','% de logro','Nota', ...indStats.filter(s=>s.avg!==undefined).map(s=>'I'+s.n+' (% logro)')],
+    studs.map(s=>[s.code, fmt(s.total,2), pct(s.pct), fmt(s.nota), ...indStats.filter(x=>x.avg!==undefined).map(x=>pct(s.ind[x.n])+' '+LV[level(s.ind[x.n])].i)]),[1,2,3,4,5,6,7]);
+})();
+
+// ---------- 7. apoyo
+(function(){
+  const box = document.getElementById('c-apoyo');
+  const rows = studs.map(s=>({s, no:Object.keys(s.ind).filter(k=>level(s.ind[k])==='N').map(k=>'I'+k)}))
+                    .filter(x=> x.s.nota<4 || x.no.length>=2);
+  if (!rows.length){
+    box.appendChild(h('p',{class:'empty'}, 'Ningún estudiante cumple el criterio: todas las notas son 4,0 o más y nadie tiene dos o más indicadores no logrados.'));
+    const one = studs.map(s=>({s, no:Object.keys(s.ind).filter(k=>level(s.ind[k])==='N').map(k=>'I'+k)})).filter(x=>x.no.length===1);
+    if (one.length){
+      box.appendChild(h('p',{class:'desc', style:'margin-top:12px'}, 'Para seguimiento (no cumplen el criterio): estudiantes con un indicador no logrado.'));
+      const d = h('div',{class:'tw', id:'t-uno'}); box.appendChild(d);
+      table('t-uno',['Código','Nota','Indicador no logrado'], one.map(x=>[x.s.code, fmt(x.s.nota), x.no.map(k=>`✗ ${k} (${pct(x.s.ind[k.slice(1)])})`).join(', ')]),[1]);
+    }
+  } else {
+    const d = h('div',{class:'tw', id:'t-apoyo'}); box.appendChild(d);
+    table('t-apoyo',['Código','Nota','Indicadores no logrados'], rows.map(x=>[x.s.code, fmt(x.s.nota), x.no.length? x.no.map(k=>'✗ '+k).join(', ') : '—']),[1]);
+  }
+})();
+
+// ---------- 8. decisión de mejora (preguntas)
+(function(){
+  const ol = document.getElementById('c-obs');
+  const by = l => itemStats.find(i=>i.label===l);
+  const i4 = indStats.find(s=>s.n===4), b3 = by('Bitácora 3');
+  const inf = by('Informe'), av3 = by('Avance 3');
+  const i1items = itemStats.filter(i=>i.ind===1);
+  const i1others = i1items.filter(i=>i.label!=='Informe' && i.label!=='Avance 3');
+  const av3No0 = DATA.estudiantes.map(s=>s.p[items.findIndex(i=>i.label==='Avance 3')]).filter(v=>v>0);
+  const easy = itemStats.filter(i=>i.dif>0.85);
+  const gira = by('Inf. Gira'), bit2 = by('Bitácora 2');
+  const obs = [
+    ['Aprendizaje o ítem: no se puede separar',
+     `I4 es el único indicador con estudiantes en No logrado (${i4.N}) y tiene el logro más bajo (${pct(i4.avg)}), pero se mide con un solo ítem, la Bitácora 3 (dificultad ${fmt(b3.dif,2)}). ${b3.zeros.join(' y ')} tienen 0 puntos. ¿Esos ceros son bitácoras no entregadas o falta de aprendizaje? ¿Conviene agregar otro ítem de I4 (por ejemplo, de un examen) para distinguir si el problema es del aprendizaje o de la bitácora?`],
+    ['Parece del ítem',
+     `En I1, el Informe final tiene dificultad ${fmt(inf.dif,2)} y nadie obtuvo el puntaje completo, mientras los otros ítems del indicador van de ${fmt(Math.min(...i1others.map(i=>i.dif)),2)} a ${fmt(Math.max(...i1others.map(i=>i.dif)),2)} (Examen 3: ${fmt(by('Examen 3').dif,2)}). El Avance 3 (${fmt(av3.dif,2)}) baja por ${av3.zeros.length} ceros (${av3.zeros.join(', ')}); sin ellos su promedio sería ${fmt(av3No0.reduce((a,b)=>a+b,0)/av3No0.length/av3.max,2)}. ¿Qué pide la rúbrica del informe que no piden los otros ítems de I1? ¿Esos ceros del Avance 3 son entregas pendientes?`],
+    ['Puede ser del ítem: poca discriminación',
+     `${easy.length} de ${itemStats.length} ítems tienen dificultad sobre 0,85 y ninguno está bajo 0,30. En el Informe de gira el ${pct(gira.full,0)} obtuvo el puntaje completo y en la Bitácora 2 el ${pct(bit2.full,0)}; las notas van de ${fmt(Math.min(...studs.map(s=>s.nota)))} a ${fmt(Math.max(...studs.map(s=>s.nota)))}. ¿Las rúbricas de esos ítems distinguen entre un desempeño bueno y uno excelente? ¿I2, con los ${indStats.find(s=>s.n===2).L} estudiantes en Logrado, pide el nivel «Analizar» que declara?`],
+  ];
+  obs.forEach(([tag, txt]) => ol.appendChild(h('li',{}, `<span class="tag">${tag}</span>${txt}`)));
+  const i5 = indStats.find(s=>s.n===5);
+  if (i5.avg===undefined) ol.insertAdjacentHTML('afterend', `<p class="desc" style="margin-top:6px">Nota: I5 no tiene ítems en la hoja Especificaciones, así que no hay datos para ese indicador.</p>`);
+})();
+
+// ---------- filtro por indicador
+(function(){
+  const tag = (id, keys) => document.querySelectorAll('#'+id+' tbody tr').forEach((tr,k)=>tr.dataset.ind = keys[k]);
+  tag('t-logro', indStats.map(s=>s.n)); tag('t-niveles', indStats.map(s=>s.n)); tag('t-dif', itemStats.map(i=>i.ind ?? 'none'));
+  const bar = document.getElementById('filters');
+  const opts = [['all','Todos'], ...indStats.map(s=>[String(s.n), 'I'+s.n])];
+  const apply = v => {
+    document.querySelectorAll('#s-logro [data-ind], #s-niveles [data-ind], #s-dif [data-ind]').forEach(e => e.hidden = !(v==='all' || String(e.dataset.ind)===v));
+    bar.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v===v ? 'true' : 'false'));
+  };
+  opts.forEach(([v,t]) => { const b = h('button',{type:'button','data-v':v,'aria-pressed':v==='all'?'true':'false'}, t); b.addEventListener('click',()=>apply(v)); bar.appendChild(b); });
+  bar.appendChild(h('span',{class:'hint'},'El filtro se aplica a los gráficos de logro, niveles y dificultad, y a sus tablas. Las cifras clave, el histograma y la tabla de apoyo muestran siempre el curso completo.'));
+})();
+</script>
+</body>
+</html>
